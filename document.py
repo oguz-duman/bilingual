@@ -7,6 +7,7 @@ from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from PyPDF2 import PdfReader
 from docx2pdf import convert
 from rich.progress import Progress
+from docx.shared import Pt
 
 from bilingual import BilingualCreater
 
@@ -36,14 +37,18 @@ class DocumentCreater(BilingualCreater):
                 doc.add_page_break()
                 for x in range(par_num):
                     if tr_par:
-                        par = doc.add_paragraph(tr_par.pop(0))
+                        par = doc.add_paragraph()
+                        run = par.add_run(tr_par.pop(0))
+                        run.font.size = Pt(11)  
                         par.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
 
                 # English page
                 doc.add_page_break()
                 for x in range(par_num):
                     if en_par:
-                        par = doc.add_paragraph(en_par.pop(0))
+                        par = doc.add_paragraph()
+                        run = par.add_run(en_par.pop(0))
+                        run.font.size = Pt(11)  
                         par.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
 
                 # Update progress
@@ -100,7 +105,7 @@ class DocumentCreater(BilingualCreater):
             sec = doc.sections[0]
             sec.page_width = Inches(5.83)   # A5 width (14.8 cm)
             sec.page_height = Inches(8.27)  # A5 height (21 cm)
-            sec.top_margin = sec.bottom_margin = sec.left_margin = sec.right_margin = Inches(1.5 / 2.54)
+            sec.top_margin = sec.bottom_margin = sec.left_margin = sec.right_margin = Inches(0.8 / 2.54)    # 0.8 cm
             
             docs.append(doc)
 
@@ -114,8 +119,7 @@ class DocumentCreater(BilingualCreater):
         try:
             convert("temp.docx", "temp.pdf", keep_active=True)
         except:
-            time.sleep(1)
-            convert("temp.docx", "temp.pdf", keep_active=True)          # try again
+            pass
 
         with open("temp.pdf", 'rb') as f:
             reader = PdfReader(f)
