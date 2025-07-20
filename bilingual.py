@@ -23,7 +23,7 @@ class BilingualCreater():
         self.tot_mismatch = 0
 
 
-    def start_over(self):
+    def start_aligning(self):
         """  """
         self.clear_cache()
         self.read_paragraphs()        
@@ -33,7 +33,7 @@ class BilingualCreater():
         self.cache_data()               # cache the corrections made so far
 
 
-    def continue_process(self):
+    def continue_aligning(self):
         """  """
         self.fetch_cached_data()
         self.align_unmatchings()

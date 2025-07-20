@@ -1,7 +1,7 @@
 import os
 from InquirerPy import inquirer
 
-from bilingual import BilingualCreater
+from document import DocumentCreater
 
 
 class MenuNavigator:
@@ -42,7 +42,8 @@ class MenuNavigator:
 
     def start_over(self):
         try:
-            bilingual_creater.start_over()
+            document_creater.start_aligning()           
+            document_creater.create_bilingual_doc()
         except Exception as e:
             print("Error during process:", e)
             self.running = False                    # exit the program
@@ -50,7 +51,8 @@ class MenuNavigator:
 
     def continue_process(self):
         try:
-            bilingual_creater.continue_process()
+            document_creater.continue_aligning()
+            document_creater.create_bilingual_doc()
         except Exception as e:
             print("Error during process:", e)
             self.running = False                    # exit the program
@@ -81,7 +83,7 @@ class MenuNavigator:
 
 # create class objects
 menu_navigator = MenuNavigator()
-bilingual_creater = BilingualCreater()
+document_creater = DocumentCreater()
 
 # run the menu navigator
 menu_navigator.run()
