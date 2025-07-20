@@ -1,0 +1,26 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# IDE settings
+.vscode/
+.idea/
+
+# Virtual environment
+venv/
+env/
+.env
+
+# Build directories
+build/
+dist/
+*.spec
+
+# ignore temporary readme files
+*/readme.txt 
+
+# ignore cmd files
+*.cmd
+
+#ignore cache data
+*.pickle
