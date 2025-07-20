@@ -1,7 +1,7 @@
 import os
 from InquirerPy import inquirer
 
-from bilingual_creater import BilingualCreater
+from bilingual import BilingualCreater
 
 
 class MenuNavigator:

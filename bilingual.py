@@ -1,6 +1,7 @@
 import os
 import re
 import pickle
+import time
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 
@@ -83,7 +84,11 @@ class BilingualCreater():
             task = progress.add_task("[green]Creating translated data...", total=len(self.tr_par))
 
             for i, paragraph in enumerate(self.tr_par):
-                self.trans_par.append(translator.translate(paragraph))
+                try:
+                    self.trans_par.append(translator.translate(paragraph))
+                except:
+                    time.sleep(1) 
+                    self.trans_par.append(translator.translate(paragraph))      # try again
 
                 # Update progress
                 progress.update(task, advance=1, description=f"[green]Creating translated data {i+1}/{len(self.tr_par)}...")
@@ -133,29 +138,77 @@ class BilingualCreater():
 
         # While there is a mismatch
         while unmatching_indexes:  
-            
             self.print_mismatch(unmatching_indexes[0])       # print the first mismatch
             
-            # prompt the user to selecet the operation
+            # print the progress
             print("\n\n")
             if self.tot_mismatch != 0:
                 print(f"{self.tot_mismatch - len(unmatching_indexes)}/{self.tot_mismatch} -- {int((self.tot_mismatch - len(unmatching_indexes)) / self.tot_mismatch * 100)}%\n")
+            
+            # prompt the user to selecet the operation
             choice = inquirer.select(
                 message="Select an option",
-                choices=["Skip", "Add", "Remove", "Edit", "--Finish--", "--Save and Exit--"]
+                choices=["Ok", "Remove", "Edit", "Add", "--Finish--", "--Save and Exit--"]
             ).execute()
 
-            if choice == "Skip":
+            # Take actions according to selected operation
+            if choice == "Ok":
                 self.index_pos = unmatching_indexes[0]
             
-            elif choice == "Add":
-                pass
-
             elif choice == "Remove":
-                pass
+                lan = self.promt_for_language()
+                indexes = self.prompt_for_index_list()
+
+                # check if the index input is valid
+                if not indexes:
+                    continue
+
+                # remove the selected index
+                if lan == "en":
+                    for index in indexes:
+                        self.en_par.pop(int(index))
+                elif lan == "tr":
+                    for index in indexes:
+                        self.tr_par.pop(int(index))
+                        self.trans_par.pop(int(index))
+                else:
+                    continue
 
             elif choice == "Edit":
-                pass
+                lan = self.promt_for_language()
+                index = self.prompt_for_index()
+                text = self.prompt_for_text()
+
+                # check if the index and text input is valid
+                if not index or not text:
+                    continue
+                
+                # add the text to the selected index
+                if lan == "en":
+                    self.en_par[index] = text
+                elif lan == "tr":
+                    self.tr_par[index] = text
+                    self.trans_par[index] = text
+                else:
+                    continue
+
+            elif choice == "Add":
+                lan = self.promt_for_language()
+                index = self.prompt_for_index()
+                text = self.prompt_for_text()
+
+                # check if the index and text input is valid
+                if not index or not text:
+                    continue
+                
+                # add the text to the selected index
+                if lan == "en":
+                    self.en_par.insert(index, text)
+                elif lan == "tr":
+                    self.tr_par.insert(index, text)
+                    self.trans_par.insert(index, text)
+                else:
+                    continue
 
             elif choice == "--Finish--":
                 self.cache_data()
@@ -202,22 +255,22 @@ class BilingualCreater():
 
         # prepare the text to print
         for x in range(index-3, index+3):
-            if x > len(self.en_par)-1:
+            if x > len(self.en_par)-1 or x < 0:
                 continue
             if x == index:
-                left.append(f"\033[31m--{x}--\033[0m")
+                left.append(f"\033[31m------------------------ {x} ------------------------\033[0m")
             else:
-                left.append(f"--{x}--")
+                left.append(f"------------------------ {x} ------------------------")
             left.append(f"{self.en_par[x]}")
         
         # prepare the text to print
         for x in range(index-3, index+3):
-            if x > len(self.tr_par)-1:
+            if x > len(self.tr_par)-1 or x < 0:
                 continue
             if x == index:
-                right.append(f"\033[31m--{x}--\033[0m")
+                right.append(f"\033[31m------------------------ {x} ------------------------\033[0m")
             else:
-                right.append(f"--{x}--")
+                right.append(f"------------------------ {x} ------------------------")
             right.append(f"{self.tr_par[x]}")
 
         self.print_side_by_side(left, right)
@@ -289,7 +342,47 @@ class BilingualCreater():
         os.system("cls" if os.name == "nt" else "clear")
 
 
+    def promt_for_language(self):
+        lan = inquirer.select(
+            message="Remove from",
+            choices=["en", "tr", "Cancel"]
+        ).execute()
+
+        return lan
+
+
+    def prompt_for_index_list(self):
+        self.warning_message(" ")
+        try:
+            indexes = inquirer.text(message="Index or indexes:").execute().replace(" ", "").split(",")
+            indexes = [int(index) for index in indexes]
+            indexes.reverse()
+        except:
+            return None
+
+        return indexes
+
+
+    def prompt_for_index(self):
+        try:
+            index = int(inquirer.text(message="Index:"))
+        except:
+            return None
+
+        return index
+
+
+    def prompt_for_text(self):
+        try:
+            text = inquirer.text(message="Index:")
+        except:
+            return None
+
+        return text
+
+
     def create_doc(self):
         """  """
         pass
+
 
