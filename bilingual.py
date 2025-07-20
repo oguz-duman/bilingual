@@ -150,7 +150,7 @@ class BilingualCreater():
             # prompt the user to selecet the operation
             choice = inquirer.select(
                 message="Select an option",
-                choices=["Ok", "Remove", "Edit", "Add", "--Finish--", "--Save and Exit--"]
+                choices=["Ok", "Remove", "Merge", "Edit", "Add", "--Finish--", "--Save and Exit--"]
             ).execute()
 
             # Take actions according to selected operation
@@ -176,6 +176,29 @@ class BilingualCreater():
                 else:
                     continue
 
+
+            elif choice == "Merge":
+                lan = self.promt_for_language()
+                indexes = self.prompt_for_index_list()
+
+                # check if the index input is valid
+                if indexes is None and len(indexes) != 2:
+                    continue
+
+                # merge the texts of selected indexes
+                if lan == "en":
+                    self.en_par[min(indexes)] += " " + self.en_par[max(indexes)]
+                    self.en_par.pop(max(indexes))
+                elif lan == "tr":
+                    self.tr_par[min(indexes)] += " " + self.tr_par[max(indexes)]
+                    self.tr_par.pop(max(indexes))
+
+                    self.trans_par[min(indexes)] += " " + self.trans_par[min(indexes)]
+                    self.trans_par.pop(max(indexes))
+                else:
+                    continue      
+
+            
             elif choice == "Edit":
                 lan = self.promt_for_language()
                 index = self.prompt_for_index()
