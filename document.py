@@ -20,8 +20,8 @@ class DocumentCreater(BilingualCreater):
         """  """
         self.determine_paragraph_counts()
         
-        tr_par = self.tr_par
-        en_par = self.en_par
+        tr_par = self.tr_par.copy()
+        en_par = self.en_par.copy()
 
         # Create a new A5 document
         doc = self.create_doc()
@@ -55,11 +55,13 @@ class DocumentCreater(BilingualCreater):
 
     def determine_paragraph_counts(self):
         """  """
-        tr_par = self.tr_par
-        en_par = self.en_par
+        tr_par = self.tr_par.copy()
+        en_par = self.en_par.copy()
+
+        progress_len = len(en_par)
         
         with Progress(transient=True) as progress:
-            task = progress.add_task("[green]Calculating paragraph counts per page...", total=min(len(tr_par), len(en_par)))
+            task = progress.add_task("[green]Calculating paragraph counts per page...", total=progress_len)
 
             while len(en_par) and len(tr_par):
                 # Create temporary documents
@@ -86,11 +88,12 @@ class DocumentCreater(BilingualCreater):
                 del tr_par[:par_count]
 
                 # Update progress
-                progress.update(task, advance=1, description=f"[green]Calculating paragraph counts per page...")
+                progress.update(task, advance=1, description=f"[green]Calculating paragraph counts per page {progress_len-len(en_par)}/{progress_len}...")
                 
 
     def create_doc(self, num=1):
         """  """
+        docs = []
         for x in range(num):
             doc = Document()
             sec = doc.sections[0]
@@ -98,14 +101,18 @@ class DocumentCreater(BilingualCreater):
             sec.page_height = Inches(8.27)  # A5 height (21 cm)
             sec.top_margin = sec.bottom_margin = sec.left_margin = sec.right_margin = Inches(1.5 / 2.54)
             
-            return doc
+            docs.append(doc)
+
+        return docs[0] if len(docs) == 1 else docs
 
 
     def get_page_number(self, doc):
         """  """
         doc.save("temp.docx")
 
+        self.clear_console()
         convert("temp.docx", "temp.pdf", keep_active=True)
+        self.clear_console()
 
         with open("temp.pdf", 'rb') as f:
             reader = PdfReader(f)

@@ -50,9 +50,10 @@ class MenuNavigator:
 
 
     def continue_process(self):
+        document_creater.continue_aligning()
+        document_creater.create_bilingual_doc()
         try:
-            document_creater.continue_aligning()
-            document_creater.create_bilingual_doc()
+            pass
         except Exception as e:
             print("Error during process:", e)
             self.running = False                    # exit the program

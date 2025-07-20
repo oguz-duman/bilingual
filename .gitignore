@@ -22,5 +22,9 @@ dist/
 # ignore cmd files
 *.cmd
 
-#ignore cache data
+# ignore cache data
 *.pickle
+
+# ignore temporary files
+temp.docx
+temp.pdf
