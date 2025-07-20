@@ -1,4 +1,6 @@
 import os
+import tempfile
+import subprocess
 import re
 import pickle
 import time
@@ -141,7 +143,7 @@ class BilingualCreater():
             self.print_mismatch(unmatching_indexes[0])       # print the first mismatch
             
             # print the progress
-            print("\n\n")
+            print("\n")
             if self.tot_mismatch != 0:
                 print(f"{self.tot_mismatch - len(unmatching_indexes)}/{self.tot_mismatch} -- {int((self.tot_mismatch - len(unmatching_indexes)) / self.tot_mismatch * 100)}%\n")
             
@@ -160,7 +162,7 @@ class BilingualCreater():
                 indexes = self.prompt_for_index_list()
 
                 # check if the index input is valid
-                if not indexes:
+                if indexes is None:
                     continue
 
                 # remove the selected index
@@ -177,28 +179,28 @@ class BilingualCreater():
             elif choice == "Edit":
                 lan = self.promt_for_language()
                 index = self.prompt_for_index()
-                text = self.prompt_for_text()
-
+            
                 # check if the index and text input is valid
-                if not index or not text:
+                if index is None:
                     continue
                 
                 # add the text to the selected index
                 if lan == "en":
-                    self.en_par[index] = text
+                    self.en_par[index] = self.edit_text_with_editor(self.en_par[index])
+
                 elif lan == "tr":
-                    self.tr_par[index] = text
-                    self.trans_par[index] = text
+                    self.tr_par[index] = self.edit_text_with_editor(self.tr_par[index])
+                    self.trans_par[index] = self.tr_par[index]
                 else:
                     continue
-
+                
             elif choice == "Add":
                 lan = self.promt_for_language()
                 index = self.prompt_for_index()
                 text = self.prompt_for_text()
 
                 # check if the index and text input is valid
-                if not index or not text:
+                if index is None or text is None:
                     continue
                 
                 # add the text to the selected index
@@ -352,12 +354,13 @@ class BilingualCreater():
 
 
     def prompt_for_index_list(self):
-        self.warning_message(" ")
         try:
-            indexes = inquirer.text(message="Index or indexes:").execute().replace(" ", "").split(",")
+            indexes = inquirer.text(message="Index or indexes:").execute()
+            indexes = indexes.replace(" ", "").split(",")
             indexes = [int(index) for index in indexes]
             indexes.reverse()
         except:
+            self.warning_message("incorrect input for index")
             return None
 
         return indexes
@@ -365,8 +368,10 @@ class BilingualCreater():
 
     def prompt_for_index(self):
         try:
-            index = int(inquirer.text(message="Index:"))
+            index = inquirer.text(message="Index:").execute()
+            index = int(index)
         except:
+            self.warning_message("incorrect input for index")
             return None
 
         return index
@@ -374,11 +379,35 @@ class BilingualCreater():
 
     def prompt_for_text(self):
         try:
-            text = inquirer.text(message="Index:")
+            text = inquirer.text(message="Text:").execute()
         except:
+            self.warning_message("incorrect input for text")
             return None
 
         return text
+
+
+    def edit_text_with_editor(self, initial_text=""):
+        # Create a temporary file
+        with tempfile.NamedTemporaryFile(suffix=".txt", delete=False, mode='w+', encoding='utf-8') as tf:
+            tf.write(initial_text)
+            tf.flush()
+            temp_filename = tf.name
+
+        # Determine which editor to use
+        editor = os.environ.get('EDITOR', 'nano' if os.name != 'nt' else 'notepad')
+
+        # Open the editor
+        subprocess.call([editor, temp_filename])
+
+        # Read the edited content
+        with open(temp_filename, 'r', encoding='utf-8') as tf:
+            edited_text = tf.read()
+
+        # Clean up temp file
+        os.unlink(temp_filename)
+
+        return edited_text
 
 
     def create_doc(self):
