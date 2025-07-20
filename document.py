@@ -1,4 +1,5 @@
 import os
+import time
 
 from docx import Document
 from docx.shared import Inches
@@ -110,9 +111,11 @@ class DocumentCreater(BilingualCreater):
         """  """
         doc.save("temp.docx")
 
-        self.clear_console()
-        convert("temp.docx", "temp.pdf", keep_active=True)
-        self.clear_console()
+        try:
+            convert("temp.docx", "temp.pdf", keep_active=True)
+        except:
+            time.sleep(1)
+            convert("temp.docx", "temp.pdf", keep_active=True)          # try again
 
         with open("temp.pdf", 'rb') as f:
             reader = PdfReader(f)
